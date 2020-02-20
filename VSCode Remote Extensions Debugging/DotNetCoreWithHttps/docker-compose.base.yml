@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+
+### Web Application Container #######################
+    webapp:
+      build:
+        context: .
+        dockerfile: ./.docker/WebApp/Dockerfile
+      environment:
+        - ASPNETCORE_HTTPS_PORT=${HOST_HTTPS_PORT} # So that the application's HTTP to HTTPS redirection works as intended.

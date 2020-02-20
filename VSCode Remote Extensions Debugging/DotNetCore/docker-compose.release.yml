@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+
+### Web Application Container #######################
+    webapp:
+      build:
+        args:
+          - entrypointfile=./.docker/WebApp/docker-entrypoint.sh
+          - buildconfig=${BUILD_CONFIG}
+          - pathtoproject=${PATH_TO_PROJECT}
+          - csprojbasename=${CS_PROJ_BASE_NAME}
+          - launchapp=${LAUNCH_APP}
+      ports:
+        - "${HOST_HTTP_PORT}:80"

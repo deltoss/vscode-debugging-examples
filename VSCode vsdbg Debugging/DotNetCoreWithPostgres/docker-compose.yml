@@ -1,0 +1,79 @@
+version: '3'
+
+services:
+
+### Web App Container #######################
+    webapp:
+      build:
+        context: .
+        dockerfile: ./.docker/WebApp/Dockerfile
+        args:
+          - entrypointfile=./.docker/WebApp/docker-entrypoint.sh
+          - buildconfig=${BUILD_CONFIG}
+          - pathtoproject=${PATH_TO_PROJECT}
+          - csprojbasename=${CS_PROJ_BASE_NAME}
+          - launchapp=${LAUNCH_APP}
+      ports:
+        - "${HOST_HTTP_PORT}:80"
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      networks:
+        - frontend
+        - backend
+      depends_on:
+        - "postgres"
+
+### Postgres Container #######################################
+    postgres:
+      build:
+        context: ./.docker/Postgres
+      environment:
+        - POSTGRES_USER=${POSTGRES_USER}
+        - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      # We used named volumes instead of mounted volumes
+      # as there are issues with using postgres with
+      # docker on Windows
+      #   https://github.com/docker/for-win/issues/445
+      volumes:
+        - postgresdata
+      ports:
+        - "${POSTGRES_PORT}:5432"
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      networks:
+        - backend
+
+### PGAdmin Container #######################################
+    pgadmin:
+      build:
+        context: ./.docker/PGAdmin
+      environment:
+        - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+        - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      volumes:
+        - ${DATA_SAVE_PATH}/pgadmin:/var/lib/pgadmin
+        - ${PGADMIN_SERVERS_JSON}:/pgadmin4/servers.json
+      ports:
+        - "${PGADMIN_HTTP_PORT}:80"
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      networks:
+        - frontend
+        - backend
+      depends_on:
+        - "postgres"
+
+### Networks Setup ############################################
+
+networks:
+  frontend:
+    driver: "bridge"
+  backend:
+    driver: "bridge"
+
+### Volumes Setup #############################################
+
+volumes:
+  postgresdata:
+  pgadmin:
+    driver: "local"

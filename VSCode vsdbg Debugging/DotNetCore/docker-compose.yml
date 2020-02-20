@@ -1,0 +1,30 @@
+version: '3'
+
+services:
+
+### Web Application Container #######################
+    webapp:
+      build:
+        context: .
+        dockerfile: ./.docker/WebApp/Dockerfile
+        args:
+          - entrypointfile=./.docker/WebApp/docker-entrypoint.sh
+          - buildconfig=${BUILD_CONFIG}
+          - pathtoproject=${PATH_TO_PROJECT}
+          - csprojbasename=${CS_PROJ_BASE_NAME}
+          - launchapp=${LAUNCH_APP}
+      ports:
+        - "${HOST_HTTP_PORT}:80"
+      extra_hosts:
+        - "dockerhost:${DOCKER_HOST_IP}"
+      networks:
+        - frontend
+        - backend
+
+### Networks Setup ############################################
+
+networks:
+  frontend:
+    driver: "bridge"
+  backend:
+    driver: "bridge"
